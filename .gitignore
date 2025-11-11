@@ -1,0 +1,3 @@
+# .gitignore
+Ingredient Detection/ingredients_dataset/
+*.cache
