@@ -5,7 +5,7 @@ import numpy as np
 import ast
 import pickle
 import kagglehub
-import os
+import os, shutil
 
 # Your 54 ingredient categories (from detector)
 INGREDIENT_CLASSES = [
@@ -130,7 +130,10 @@ def save_recipe_database(df_filtered, output_path='recipes_database.pkl'):
 
 # Example usage:
 if __name__ == "__main__":
-    if not os.path.exists('Recipe_Generator\RAW_recipes.csv'):
-        kagglehub.dataset_download("shuyangli94/food-com-recipes-and-user-interactions")
-    processed_df = preprocess_food_com_dataset('Recipe_Generator\RAW_recipes.csv', 'Recipe_Generator\\recipes_processed.pkl')
+    if not os.path.exists('Recipe_Generator\\RAW_recipes.csv'):
+        path = kagglehub.dataset_download("shuyangli94/food-com-recipes-and-user-interactions")
+        dest_folder = os.path.join(os.getcwd(), "Recipe_Generator")
+        shutil.move(os.path.join(path, "RAW_recipes.csv"),os.path.join(dest_folder, "RAW_recipes.csv"))
+        
+    processed_df = preprocess_food_com_dataset('Recipe_Generator\\RAW_recipes.csv', 'Recipe_Generator\\recipes_processed.pkl')
     save_recipe_database(processed_df, 'Recipe_Generator\\recipes_database.pkl')
