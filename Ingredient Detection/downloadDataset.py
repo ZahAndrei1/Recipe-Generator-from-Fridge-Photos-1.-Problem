@@ -4,6 +4,10 @@ from pathlib import Path
 import urllib.request
 from tqdm import tqdm
 import os
+import socket
+
+# *** SET GLOBAL TIMEOUT: 10 seconds to prevent hanging ***
+socket.setdefaulttimeout(10)
 
 # Download class descriptions
 def download_class_descriptions():
@@ -15,8 +19,13 @@ def download_class_descriptions():
 def get_ingredient_codes():
     df = download_class_descriptions()
     
+    # *** EXPANDED INGREDIENT LIST ***
     ingredients = ['Apple', 'Banana', 'Orange', 'Tomato', 'Carrot', 
-                   'Potato', 'Bread', 'Cheese', 'Broccoli', 'Strawberry']
+                   'Potato', 'Bread', 'Cheese', 'Broccoli', 'Strawberry',
+                   'Lemon', 'Cucumber', 'Onion', 'Garlic', 'Mushroom',
+                   'Lettuce', 'Egg', 'Chicken', 'Fish', 'Shrimp',
+                   'Milk', 'Butter', 'Rice', 'Pasta', 'Corn']
+    # *** NOW 25 INGREDIENTS INSTEAD OF 10 ***
     
     codes = {}
     for ingredient in ingredients:
@@ -28,7 +37,7 @@ def get_ingredient_codes():
     return codes
 
 # Download images and annotations
-def download_ingredients_dataset(limit_per_class=500):
+def download_ingredients_dataset(limit_per_class=300):
     ingredient_codes = get_ingredient_codes()
     
     # Download annotations
@@ -43,27 +52,33 @@ def download_ingredients_dataset(limit_per_class=500):
     Path('ingredients_dataset/train/images').mkdir(parents=True, exist_ok=True)
     Path('ingredients_dataset/train/labels').mkdir(parents=True, exist_ok=True)
     
-    # Get image IDs
-    image_ids = annotations['ImageID'].unique()[:limit_per_class]
+    # *** MODIFIED: Get image IDs per class to ensure limit_per_class images for each ingredient ***
+    image_ids_set = set()
+    for ingredient_code in ingredient_codes.values():
+        class_annotations = annotations[annotations['LabelName'] == ingredient_code]
+        class_image_ids = class_annotations['ImageID'].unique()[:limit_per_class]
+        image_ids_set.update(class_image_ids)
+    
+    image_ids = list(image_ids_set)
+    print(f"Total unique images to download: {len(image_ids)}")
+    # *** END MODIFICATION ***
     
     print(f"Downloading {len(image_ids)} images...")
     
-    # Download image list first
-    print("Downloading image URLs...")
-    images_url = "https://storage.googleapis.com/openimages/2018_04/train/train-images-boxable-with-rotation.csv"
-    images_df = pd.read_csv(images_url)
-    
     success_count = 0
+    failed_count = 0
+    
+    # *** OPTIMIZED: Construct image URLs directly instead of downloading giant CSV ***
+    # OpenImages uses a predictable URL pattern
+    base_url = "https://s3.amazonaws.com/open-images-dataset"
+    
     for img_id in tqdm(image_ids):
-        # Get the actual image URL
-        img_row = images_df[images_df['ImageID'] == img_id]
-        if img_row.empty:
-            continue
-            
-        img_url = img_row.iloc[0]['OriginalURL']
+        # Construct the image URL directly (OpenImages URL pattern)
+        img_url = f"{base_url}/train/{img_id}.jpg"
         img_path = f'ingredients_dataset/train/images/{img_id}.jpg'
         
         try:
+            # *** TIMEOUT SET GLOBALLY via socket.setdefaulttimeout(10) ***
             urllib.request.urlretrieve(img_url, img_path)
             
             # Verify image was downloaded
@@ -80,10 +95,23 @@ def download_ingredients_dataset(limit_per_class=500):
                         width = row['XMax'] - row['XMin']
                         height = row['YMax'] - row['YMin']
                         f.write(f"{class_id} {x_center} {y_center} {width} {height}\n")
+            else:
+                # If S3 fails, remove the bad file
+                if os.path.exists(img_path):
+                    os.remove(img_path)
+                failed_count += 1
         except Exception as e:
+            # Clean up failed downloads
+            if os.path.exists(img_path):
+                os.remove(img_path)
+            failed_count += 1
             continue
     
+    print(f"\n{'='*50}")
     print(f"Successfully downloaded {success_count} images")
+    print(f"Failed downloads: {failed_count}")
+    print(f"Success rate: {success_count}/{len(image_ids)} ({100*success_count/len(image_ids):.1f}%)")
+    print(f"{'='*50}\n")
     
     # Create data.yaml
     yaml_content = f"""train: ingredients_dataset/train/images
@@ -97,5 +125,5 @@ names: {list(ingredient_codes.keys())}
     
     print("Dataset ready!")
 
-# Run
-download_ingredients_dataset(limit_per_class=500)
+# *** CHANGED: Download 300 images per ingredient class ***
+download_ingredients_dataset(limit_per_class=300)
