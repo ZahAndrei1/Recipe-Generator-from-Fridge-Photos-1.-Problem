@@ -2,10 +2,11 @@ from ultralytics import YOLO
 from PIL import Image
 
 # Load your trained model
-model = YOLO('runs/ingredient_detection/demo3/weights/best.pt')
+model = YOLO('runs/ingredient_detection/demo5/weights/best.pt')
 
 # Run prediction
-results = model('test_image.jpg')
+#results = model('test_image1.jpg')
+results = model('sushi.jpeg')
 
 # Display results
 for result in results:
