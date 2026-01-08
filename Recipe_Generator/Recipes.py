@@ -8,7 +8,7 @@ import kagglehub
 import os, shutil
 
 # Your 54 ingredient categories (from detector)
-INGREDIENT_CLASSES = [
+"""INGREDIENT_CLASSES = [
     'Apple', 'Artichoke', 'Asparagus', 'Bagel', 'Banana', 'Bell pepper',
     'Bread', 'Broccoli', 'Burrito', 'Cabbage', 'Cake', 'Carrot', 'Cheese',
     'Cookie', 'Crab', 'Croissant', 'Cucumber', 'Doughnut', 'Egg',
@@ -18,7 +18,38 @@ INGREDIENT_CLASSES = [
     'Pizza', 'Pomegranate', 'Potato', 'Pretzel', 'Salad', 'Sandwich',
     'Shellfish', 'Shrimp', 'Strawberry', 'Submarine sandwich', 'Sushi',
     'Taco', 'Tart', 'Tomato', 'Waffle', 'Watermelon', 'Zucchini'
+]"""
+
+INGREDIENT_CLASSES = [
+    # --- Your Original 54 ---
+    'Apple', 'Artichoke', 'Asparagus', 'Bagel', 'Banana', 'Bell pepper',
+    'Bread', 'Broccoli', 'Burrito', 'Cabbage', 'Cake', 'Carrot', 'Cheese',
+    'Cookie', 'Crab', 'Croissant', 'Cucumber', 'Doughnut', 'Egg',
+    'French fries', 'Grape', 'Grapefruit', 'Guacamole', 'Hamburger',
+    'Hot dog', 'Ice cream', 'Lemon', 'Lobster', 'Mango', 'Muffin',
+    'Orange', 'Oyster', 'Pancake', 'Pasta', 'Peach', 'Pear', 'Pineapple',
+    'Pizza', 'Pomegranate', 'Potato', 'Pretzel', 'Salad', 'Sandwich',
+    'Shellfish', 'Shrimp', 'Strawberry', 'Submarine sandwich', 'Sushi',
+    'Taco', 'Tart', 'Tomato', 'Waffle', 'Watermelon', 'Zucchini',
+    
+    # --- ESSENTIAL NEW ADDITIONS ---
+    # Staples
+    'Rice', 'Flour', 'Sugar', 'Salt', 'Pepper', 'Oil', 'Butter', 'Water', 
+    'Vinegar', 'Yeast', 'Baking Powder', 'Milk', 'Cream', 'Yogurt',
+    
+    # Proteins
+    'Chicken', 'Beef', 'Pork', 'Bacon', 'Sausage', 'Fish', 'Salmon', 
+    'Tuna', 'Tofu', 'Beans', 'Lentils',
+    
+    # Common Veg/Aromatics (Crucial for filtering soups/stews)
+    'Onion', 'Garlic', 'Ginger', 'Mushroom', 'Spinach', 'Corn', 'Peas',
+    'Celery', 'Lettuce', 'Avocado', 'Lime', 'Cilantro', 'Basil', 'Parsley',
+    
+    # Sauces/Condiments
+    'Soy Sauce', 'Ketchup', 'Mustard', 'Mayonnaise', 'Honey', 'Jam',
+    'Chocolate', 'Vanilla', 'Nuts', 'Peanut Butter'
 ]
+
 
 def create_ingredient_vector(recipe_ingredients, ingredient_classes):
     """
