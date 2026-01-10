@@ -1,0 +1,5 @@
+train: ingredients_dataset/train/images
+val: ingredients_dataset/train/images
+
+nc: 25
+names: ['Apple', 'Banana', 'Orange', 'Tomato', 'Carrot', 'Potato', 'Bread', 'Cheese', 'Broccoli', 'Strawberry', 'Lemon', 'Cucumber', 'Onion', 'Garlic', 'Mushroom', 'Lettuce', 'Egg', 'Chicken', 'Fish', 'Shrimp', 'Milk', 'Butter', 'Rice', 'Pasta', 'Corn']

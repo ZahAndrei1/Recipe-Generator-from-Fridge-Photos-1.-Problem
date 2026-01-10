@@ -1,3 +1,43 @@
-# .gitignore
-Ingredient Detection/ingredients_dataset/
+# Datasets
+*.tar.gz
+*.zip
+food-101/
+
+# Recipe database
+*.pkl
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
 *.cache
+
+# Training runs and datasets
+runs/
+ingredients_dataset/
+Ingredient Detection/runs/
+Ingredient Detection/ingredients_dataset/
+Ingredient_Detection/runs/
+Ingredient_Detection/ingredients_dataset/
+
+# Word documents
+*.docx
+
+# Test images
+test*.jpg
+test*.webp
+test*.png
+
+# Ingredient Detection folder contents (but keep the folder structure)
+Ingredient Detection/
+Ingredient Detection/ingredients_dataset/
+Ingredient Detection/*.pt
+Ingredient Detection/*.tar.gz
+
+# Recipe Generator caches
+Recipe_Generator/__pycache__/
+Recipe_Generator/*.pkl
+
+# OS files
+.DS_Store
+Thumbs.db
