@@ -1,43 +1,37 @@
 import pickle
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-#from ingredients import INGREDIENT_CLASSES
+import sys
+import os
+import ast
 
-# Now both files always use the exact same list!
+# Add parent directory to path to import from Ingredient Detection folder
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Ingredient Detection'))
+from inference import detect_ingredients
+
+# IMPORTANT: This must match the model's training classes (from ingredients_data.yaml)
 INGREDIENT_CLASSES = [
-    # --- Your Original 54 ---
-    'Apple', 'Artichoke', 'Asparagus', 'Bagel', 'Banana', 'Bell pepper',
-    'Bread', 'Broccoli', 'Burrito', 'Cabbage', 'Cake', 'Carrot', 'Cheese',
-    'Cookie', 'Crab', 'Croissant', 'Cucumber', 'Doughnut', 'Egg',
-    'French fries', 'Grape', 'Grapefruit', 'Guacamole', 'Hamburger',
-    'Hot dog', 'Ice cream', 'Lemon', 'Lobster', 'Mango', 'Muffin',
-    'Orange', 'Oyster', 'Pancake', 'Pasta', 'Peach', 'Pear', 'Pineapple',
-    'Pizza', 'Pomegranate', 'Potato', 'Pretzel', 'Salad', 'Sandwich',
-    'Shellfish', 'Shrimp', 'Strawberry', 'Submarine sandwich', 'Sushi',
-    'Taco', 'Tart', 'Tomato', 'Waffle', 'Watermelon', 'Zucchini',
-    
-    # --- ESSENTIAL NEW ADDITIONS ---
-    # Staples
-    'Rice', 'Flour', 'Sugar', 'Salt', 'Pepper', 'Oil', 'Butter', 'Water', 
-    'Vinegar', 'Yeast', 'Baking Powder', 'Milk', 'Cream', 'Yogurt',
-    
-    # Proteins
-    'Chicken', 'Beef', 'Pork', 'Bacon', 'Sausage', 'Fish', 'Salmon', 
-    'Tuna', 'Tofu', 'Beans', 'Lentils',
-    
-    # Common Veg/Aromatics (Crucial for filtering soups/stews)
-    'Onion', 'Garlic', 'Ginger', 'Mushroom', 'Spinach', 'Corn', 'Peas',
-    'Celery', 'Lettuce', 'Avocado', 'Lime', 'Cilantro', 'Basil', 'Parsley',
-    
-    # Sauces/Condiments
-    'Soy Sauce', 'Ketchup', 'Mustard', 'Mayonnaise', 'Honey', 'Jam',
-    'Chocolate', 'Vanilla', 'Nuts', 'Peanut Butter'
+    'Apple', 'Banana', 'Orange', 'Tomato', 'Carrot',
+    'Potato', 'Bread', 'Cheese', 'Broccoli', 'Strawberry',
+    'Lemon', 'Cucumber', 'Onion', 'Garlic', 'Mushroom',
+    'Lettuce', 'Egg', 'Chicken', 'Fish', 'Shrimp',
+    'Milk', 'Butter', 'Rice', 'Pasta', 'Corn'
 ]
 
-def load_recipe_database(pkl_path='Recipe_Generator\\recipes_database.pkl'):
+def load_recipe_database(pkl_path=None):
     """
     Load the preprocessed recipe database for matching.
     """
+    if pkl_path is None:
+        # Use path relative to this file
+        pkl_path = os.path.join(os.path.dirname(__file__), 'recipes_database.pkl')
+
+    if not os.path.exists(pkl_path):
+        raise FileNotFoundError(
+            f"Recipe database not found at: {pkl_path}\n"
+            "Please run 'python Recipe_Generator/Recipes.py' first to generate the database."
+        )
+
     with open(pkl_path, 'rb') as f:
         recipe_db = pickle.load(f)
     print(f"Loaded {len(recipe_db['names'])} recipes from database")
@@ -111,48 +105,68 @@ if __name__ == "__main__":
     # Load the preprocessed recipe database 
     recipe_db = load_recipe_database()
 
-    # DYNAMICALLY set vector size
-    vector_size = len(INGREDIENT_CLASSES) 
-    detected_vector = np.zeros(vector_size)
+    # Get the image path (relative to project root)
+    project_root = os.path.join(os.path.dirname(__file__), '..')
+    image_path = os.path.join(project_root, 'Ingredient Detection', 'Fridge_Photo.jpeg')
 
-    # Set your detected/test ingredients
-    for item in ['Apple', 'Carrot', 'Pasta', 'Tomato', 'Beef']:
+    print(f"Detecting ingredients from: {image_path}")
+    detected_items = detect_ingredients(image_path)
+    print(f"Detected ingredients: {detected_items}")
+
+    # Convert detected ingredients list to binary vector
+    detected_vector = np.zeros(len(INGREDIENT_CLASSES), dtype=int)
+
+    # Map detected ingredients to vector
+    mapped_ingredients = []
+    for item in detected_items:
         if item in INGREDIENT_CLASSES:
-            detected_vector[INGREDIENT_CLASSES.index(item)] = 1
+            idx = INGREDIENT_CLASSES.index(item)
+            detected_vector[idx] = 1
+            mapped_ingredients.append(item)
 
-    # Add pantry staples so they don't count as "missing"
-    staples = ['Salt', 'Pepper', 'Water', 'Oil', 'Sugar']
-    for s in staples:
-        if s in INGREDIENT_CLASSES:
-            detected_vector[INGREDIENT_CLASSES.index(s)] = 1
-
-    print(f"Vector size: {len(detected_vector)}")
+    print(f"\nMapped ingredients to vector: {mapped_ingredients}")
+    print(f"Total ingredients detected: {int(detected_vector.sum())}\n")
 
     # Get recommendations
+    print("=" * 60)
+    print("FINDING RECIPE RECOMMENDATIONS...")
+    print("=" * 60)
     recommendations = recommend_recipes(detected_vector, recipe_db, top_k=10, max_missing=2)
 
+    detected_names = [name for idx, name in enumerate(INGREDIENT_CLASSES) if detected_vector[idx]]
+
     shown_count = 0
+    filtered_count = 0
     for i, rec in enumerate(recommendations, 1):
+        # Parse ingredient list if it's a string
         ingredient_list = rec['ingredients']
+        if isinstance(ingredient_list, str):
+            try:
+                ingredient_list = ast.literal_eval(ingredient_list)
+            except:
+                ingredient_list = []
+
         # Count which recipe ingredients are actually in your fridge+staples
-        detected_names = [name for idx, name in enumerate(INGREDIENT_CLASSES) if detected_vector[idx]]
         matched = sum(any(cls.lower() in ingr.lower() for cls in detected_names) for ingr in ingredient_list)
-        
+
         # Compute ingredient-coverage ratio
         coverage = matched / len(ingredient_list) if len(ingredient_list) > 0 else 0
 
-        # Show only those where you have at least 50% of real ingredients
-        if coverage < 0.0:
+        # Show only recipes with at least 10% ingredient coverage
+        # (Adjust this threshold based on your needs: 0.0 = show all, 1.0 = perfect match only)
+        if coverage < 0.1:
+            filtered_count += 1
             continue
 
         shown_count += 1
-        print(f"{shown_count}. {rec['name']}")
-        print(f"   Similarity: {rec['similarity']:.2f}")
+        print(f"\n{shown_count}. {rec['name']}")
+        print(f"   Similarity Score: {rec['similarity']:.2f}")
         print(f"   Missing Ingredients: {rec['missing_count']}")
-        print(f"   Coverage: {coverage:.2f}")
-        print(f"   Ingredients List: {rec['ingredients']}")
+        print(f"   Coverage: {coverage:.1%} ({matched}/{len(ingredient_list)} ingredients)")
+        print(f"   Ingredients: {rec['ingredients']}")
         print(f"   Instructions: {str(rec['instructions'])[:200]}...")
-        print("-" * 50)
-    
+        print("-" * 60)
+
     if shown_count == 0:
-        print("No recipes found matching your ingredient coverage criteria.")
+        print("\nNo recipes found matching your ingredient coverage criteria.")
+        print("Try lowering the coverage threshold or detecting more ingredients.")
