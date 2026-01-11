@@ -20,7 +20,6 @@ import os, shutil
     'Taco', 'Tart', 'Tomato', 'Waffle', 'Watermelon', 'Zucchini'
 ]"""
 
-<<<<<<< HEAD
 # IMPORTANT: This must match the model's training classes (from ingredients_data.yaml)
 INGREDIENT_CLASSES = [
     'Apple', 'Banana', 'Orange', 'Tomato', 'Carrot',
@@ -28,36 +27,6 @@ INGREDIENT_CLASSES = [
     'Lemon', 'Cucumber', 'Onion', 'Garlic', 'Mushroom',
     'Lettuce', 'Egg', 'Chicken', 'Fish', 'Shrimp',
     'Milk', 'Butter', 'Rice', 'Pasta', 'Corn'
-=======
-INGREDIENT_CLASSES = [
-    # --- Your Original 54 ---
-    'Apple', 'Artichoke', 'Asparagus', 'Bagel', 'Banana', 'Bell pepper',
-    'Bread', 'Broccoli', 'Burrito', 'Cabbage', 'Cake', 'Carrot', 'Cheese',
-    'Cookie', 'Crab', 'Croissant', 'Cucumber', 'Doughnut', 'Egg',
-    'French fries', 'Grape', 'Grapefruit', 'Guacamole', 'Hamburger',
-    'Hot dog', 'Ice cream', 'Lemon', 'Lobster', 'Mango', 'Muffin',
-    'Orange', 'Oyster', 'Pancake', 'Pasta', 'Peach', 'Pear', 'Pineapple',
-    'Pizza', 'Pomegranate', 'Potato', 'Pretzel', 'Salad', 'Sandwich',
-    'Shellfish', 'Shrimp', 'Strawberry', 'Submarine sandwich', 'Sushi',
-    'Taco', 'Tart', 'Tomato', 'Waffle', 'Watermelon', 'Zucchini',
-    
-    # --- ESSENTIAL NEW ADDITIONS ---
-    # Staples
-    'Rice', 'Flour', 'Sugar', 'Salt', 'Pepper', 'Oil', 'Butter', 'Water', 
-    'Vinegar', 'Yeast', 'Baking Powder', 'Milk', 'Cream', 'Yogurt',
-    
-    # Proteins
-    'Chicken', 'Beef', 'Pork', 'Bacon', 'Sausage', 'Fish', 'Salmon', 
-    'Tuna', 'Tofu', 'Beans', 'Lentils',
-    
-    # Common Veg/Aromatics (Crucial for filtering soups/stews)
-    'Onion', 'Garlic', 'Ginger', 'Mushroom', 'Spinach', 'Corn', 'Peas',
-    'Celery', 'Lettuce', 'Avocado', 'Lime', 'Cilantro', 'Basil', 'Parsley',
-    
-    # Sauces/Condiments
-    'Soy Sauce', 'Ketchup', 'Mustard', 'Mayonnaise', 'Honey', 'Jam',
-    'Chocolate', 'Vanilla', 'Nuts', 'Peanut Butter'
->>>>>>> c3614ab0e95aa01237599bec637c64063660ba8e
 ]
 
 
@@ -171,7 +140,6 @@ def save_recipe_database(df_filtered, output_path='recipes_database.pkl'):
 
 # Example usage:
 if __name__ == "__main__":
-<<<<<<< HEAD
     # Get absolute paths relative to this file
     script_dir = os.path.dirname(os.path.abspath(__file__))
     csv_path = os.path.join(script_dir, 'RAW_recipes.csv')
@@ -188,12 +156,3 @@ if __name__ == "__main__":
 
     processed_df = preprocess_food_com_dataset(csv_path, processed_pkl_path)
     save_recipe_database(processed_df, database_pkl_path)
-=======
-    if not os.path.exists('Recipe_Generator\\RAW_recipes.csv'):
-        path = kagglehub.dataset_download("shuyangli94/food-com-recipes-and-user-interactions")
-        dest_folder = os.path.join(os.getcwd(), "Recipe_Generator")
-        shutil.move(os.path.join(path, "RAW_recipes.csv"),os.path.join(dest_folder, "RAW_recipes.csv"))
-        
-    processed_df = preprocess_food_com_dataset('Recipe_Generator\\RAW_recipes.csv', 'Recipe_Generator\\recipes_processed.pkl')
-    save_recipe_database(processed_df, 'Recipe_Generator\\recipes_database.pkl')
->>>>>>> c3614ab0e95aa01237599bec637c64063660ba8e

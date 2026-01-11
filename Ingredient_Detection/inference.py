@@ -2,7 +2,6 @@ from ultralytics import YOLO
 from PIL import Image
 import os
 
-<<<<<<< HEAD:Ingredient Detection/inference.py
 # IMPORTANT: This must match the model's training classes (from ingredients_data.yaml)
 INGREDIENT_CLASSES = [
     'Apple', 'Banana', 'Orange', 'Tomato', 'Carrot',
@@ -16,14 +15,6 @@ INGREDIENT_CLASSES = [
 _current_dir = os.path.dirname(os.path.abspath(__file__))
 _model_path = os.path.join(_current_dir, 'runs', 'ingredient_detection', 'demo5', 'weights', 'best.pt')
 model = YOLO(_model_path)
-=======
-# Load your trained model
-model = YOLO('runs/ingredient_detection/demo5/weights/best.pt')
-
-# Run prediction
-#results = model('test_image1.jpg')
-results = model('sushi.jpeg')
->>>>>>> c3614ab0e95aa01237599bec637c64063660ba8e:Ingredient_Detection/inference.py
 
 def detect_ingredients(image_path: str):
     """
