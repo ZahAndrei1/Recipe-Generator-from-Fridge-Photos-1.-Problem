@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import sys
 import os
 import ast
+import re
 
 # Add parent directory to path to import from Ingredient Detection folder
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'Ingredient_Detection'))
@@ -146,8 +147,26 @@ if __name__ == "__main__":
             except:
                 ingredient_list = []
 
-        # Count which recipe ingredients are actually in your fridge+staples
-        matched = sum(any(cls.lower() in ingr.lower() for cls in detected_names) for ingr in ingredient_list)
+        # Count which recipe ingredients are actually in your fridge
+        # Use word boundary matching to avoid false positives (e.g., "apple" matching "pineapple")
+        def ingredient_matches(detected_ingredient, recipe_ingredient):
+            """Check if detected ingredient matches recipe ingredient using word boundaries"""
+            detected_lower = detected_ingredient.lower()
+            recipe_lower = recipe_ingredient.lower()
+
+            # Check exact match with word boundaries
+            pattern = r'\b' + re.escape(detected_lower) + r'\b'
+            if re.search(pattern, recipe_lower):
+                return True
+
+            # Also check plural form (add 's' or 'es')
+            plural_pattern = r'\b' + re.escape(detected_lower) + r'e?s\b'
+            if re.search(plural_pattern, recipe_lower):
+                return True
+
+            return False
+
+        matched = sum(any(ingredient_matches(cls, ingr) for cls in detected_names) for ingr in ingredient_list)
 
         # Compute ingredient-coverage ratio
         coverage = matched / len(ingredient_list) if len(ingredient_list) > 0 else 0
